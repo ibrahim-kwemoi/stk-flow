@@ -1,0 +1,11 @@
+# Source & Config
+src/
+tests/
+examples/
+.github/
+tsconfig.json
+tsup.config.ts
+vitest.config.ts
+eslint.config.js
+prettier.config.js
+.env*

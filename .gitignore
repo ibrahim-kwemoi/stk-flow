@@ -1,0 +1,19 @@
+# Dependencies
+node_modules/
+
+# Build outputs
+dist/
+*.tsbuildinfo
+
+# Test outputs & coverage
+coverage/
+.vitest/
+
+# Environment variables
+.env
+.env.local
+.env.production
+
+# System files
+.DS_Store
+Thumbs.db

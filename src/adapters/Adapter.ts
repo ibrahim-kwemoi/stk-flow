@@ -1,1 +1,1 @@
-export { StorageAdapter } from '../types/Adapter.js';
+export type { StorageAdapter } from '../types/Adapter.js';

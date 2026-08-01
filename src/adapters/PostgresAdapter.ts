@@ -1,5 +1,5 @@
-import { StorageAdapter } from '../types/Adapter.js';
-import { PaymentRecord, PaymentStatus } from '../types/Payment.js';
+import { StorageAdapter } from '../types/Adapter';
+import { PaymentRecord, PaymentStatus } from '../types/Payment';
 
 export interface PgPoolLike {
   query(text: string, params?: unknown[]): Promise<{ rows: unknown[] }>;

@@ -9,7 +9,7 @@ import { InitiatePaymentParams, InitiatePaymentResult } from './types/InitiatePa
 import { PaymentRecord } from './types/Payment.js';
 import { QueryPaymentResult } from './types/Query.js';
 import { generateId } from './utils/uuid.js';
-import { CallbackProcessor } from './webhook/CallbackProcessor.js';
+import { CallbackProcessor } from './webhooks/CallbackProcessor.js';
 
 export class MpesaStk {
   private readonly config: InternalConfig;
