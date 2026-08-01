@@ -20,6 +20,8 @@
     "dev": "tsup --watch",
     "test": "vitest run",
     "test:watch": "vitest",
+    "test:ui": "vitest --ui",
+    "test:coverage": "vitest run --coverage",
     "lint": "eslint .",
     "format": "prettier --write ."
   },
@@ -45,6 +47,8 @@
   "devDependencies": {
     "@types/node": "^20.19.43",
     "@types/pg": "^8.11.0",
+    "@vitest/coverage-v8": "^1.2.0",
+    "@vitest/ui": "^1.6.1",
     "eslint": "^9.0.0",
     "prettier": "^3.2.0",
     "tsup": "^8.0.0",
