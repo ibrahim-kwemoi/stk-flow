@@ -4,6 +4,7 @@ node_modules/
 # Build outputs
 dist/
 *.tsbuildinfo
+*.tgz
 
 # Test outputs & coverage
 coverage/
@@ -13,7 +14,11 @@ coverage/
 .env
 .env.local
 .env.production
+.env.*
+!.env.example
 
 # System files
 .DS_Store
 Thumbs.db
+.vscode/
+.idea/
