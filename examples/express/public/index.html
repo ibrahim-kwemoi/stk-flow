@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>M-Pesa STK Express Checkout</title>
+  <style>
+    * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+    body { background: #f0f2f5; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+    .card { background: white; padding: 2rem; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); width: 100%; max-width: 400px; }
+    .mpesa-green { color: #00a651; font-weight: bold; }
+    h2 { margin-top: 0; color: #1a1a1a; font-size: 1.25rem; }
+    label { display: block; margin-top: 1rem; font-size: 0.875rem; color: #555; }
+    input { width: 100%; padding: 0.75rem; margin-top: 0.25rem; border: 1px solid #ccc; border-radius: 6px; font-size: 1rem; }
+    button { width: 100%; margin-top: 1.5rem; padding: 0.85rem; background: #00a651; border: none; color: white; font-weight: bold; font-size: 1rem; border-radius: 6px; cursor: pointer; }
+    button:disabled { background: #a5d6a7; cursor: not-allowed; }
+    
+    /* Status Overlay Styles */
+    .status-box { margin-top: 1.5rem; padding: 1rem; border-radius: 8px; text-align: center; display: none; }
+    .status-box.PENDING { display: block; background: #e3f2fd; color: #0d47a1; border: 1px solid #bbdefb; }
+    .status-box.SUCCESS { display: block; background: #e8f5e9; color: #1b5e20; border: 1px solid #c8e6c9; }
+    .status-box.FAILED { display: block; background: #ffebee; color: #b71c1c; border: 1px solid #ffcdd2; }
+    
+    .spinner { display: inline-block; width: 18px; height: 18px; border: 3px solid rgba(13,71,161,0.3); border-radius: 50%; border-top-color: #0d47a1; animation: spin 1s infinite linear; vertical-align: middle; margin-right: 8px; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+
+<div class="card">
+  <h2>Pay with <span class="mpesa-green">M-PESA</span></h2>
+  <form id="payForm">
+    <label for="phone">Phone Number</label>
+    <input type="text" id="phone" placeholder="0712345678" value="254700000000" required />
+
+    <label for="amount">Amount (KES)</label>
+    <input type="number" id="amount" value="1" min="1" required />
+
+    <button type="submit" id="submitBtn">Prompt M-Pesa STK</button>
+  </form>
+
+  <div id="statusBox" class="status-box"></div>
+</div>
+
+<script>
+  const form = document.getElementById('payForm');
+  const submitBtn = document.getElementById('submitBtn');
+  const statusBox = document.getElementById('statusBox');
+  let pollInterval = null;
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    submitBtn.disabled = true;
+    showStatus('PENDING', '<span class="spinner"></span> Requesting prompt on your phone...');
+
+    try {
+      const res = await fetch('/api/v1/mpesa/stkpush', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          phoneNumber: document.getElementById('phone').value,
+          amount: document.getElementById('amount').value,
+          accountReference: 'VisualDemo'
+        })
+      });
+
+      const data = await res.json();
+
+      if (data.success) {
+        showStatus('PENDING', '<span class="spinner"></span> PIN prompt sent! Complete transaction on handset...');
+        startPolling(data.checkoutRequestId);
+      } else {
+        showStatus('FAILED', 'Error: ' + data.message);
+        submitBtn.disabled = false;
+      }
+    } catch (err) {
+      showStatus('FAILED', 'Failed to connect to backend server.');
+      submitBtn.disabled = false;
+    }
+  });
+
+  function startPolling(checkoutRequestId) {
+    pollInterval = setInterval(async () => {
+      try {
+        const res = await fetch(`/api/v1/mpesa/query/${checkoutRequestId}`);
+        const data = await res.json();
+
+        if (data.status === 'SUCCESS') {
+          clearInterval(pollInterval);
+          showStatus('SUCCESS', `✔ Payment Received!<br>Receipt: <strong>${data.receipt}</strong>`);
+          submitBtn.disabled = false;
+        } else if (data.status === 'FAILED') {
+          clearInterval(pollInterval);
+          showStatus('FAILED', `✖ Payment Failed: ${data.message}`);
+          submitBtn.disabled = false;
+        }
+      } catch (e) {
+        console.error('Polling error:', e);
+      }
+    }, 3000); // Check every 3 seconds
+  }
+
+  function showStatus(type, message) {
+    statusBox.className = `status-box ${type}`;
+    statusBox.innerHTML = message;
+  }
+</script>
+</body>
+</html>
